@@ -1,9 +1,13 @@
 # this allows us to use code from
 # the open-source pygame library
 # throughout this file
+import sys
 import pygame
 from constants import *
 from player import Player
+from asteroid import Asteroid
+from asteroidfield import AsteroidField
+from shot import Shot
 
 
 def main():
@@ -12,8 +16,13 @@ def main():
     dt = 0
     updateable = pygame.sprite.Group()
     drawable = pygame.sprite.Group()
+    asteroids = pygame.sprite.Group()
+    shots = pygame.sprite.Group()
 
     Player.containers = (updateable, drawable)
+    Asteroid.containers = (asteroids, updateable, drawable)
+    AsteroidField.containers = (updateable)
+    Shot.containers = (shots, updateable, drawable)
 
     print("Starting asteroids!")
     print(f"Screen width:",SCREEN_WIDTH)
@@ -23,6 +32,7 @@ def main():
     pygame.display.set_caption("Player Triangle Test")
 
     player = Player(x= SCREEN_WIDTH / 2, y=SCREEN_HEIGHT / 2, radius = PLAYER_RADIUS)
+    asteroidfield = AsteroidField()
 
     while True:
         for event in pygame.event.get():
@@ -33,6 +43,17 @@ def main():
         
         for thing in updateable:
             thing.update(dt)
+
+        for thing in asteroids:
+            if thing.collisions(player):
+                print("Game over!")
+                sys.exit()
+            for shot in shots:
+                if shot.collisions(thing):
+                    shot.kill()
+                    thing.split()
+        
+
         for thing in drawable:
             thing.draw(screen)
 
@@ -40,7 +61,6 @@ def main():
 
         dt = clock.tick(60) / 1000
         
-    pygame.quit()
 
 if __name__ == "__main__":
     main()
